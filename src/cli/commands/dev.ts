@@ -7,7 +7,7 @@ import { startWatcher } from "../../watcher/watcher.js";
 export async function devCommand(cwd: string, configPath?: string): Promise<number | undefined> {
     const { root, file, config } = await loadConfig(cwd, configPath);
     let pipeline = new Pipeline(createContext(root, config));
-    logger.heading("webforge dev");
+    logger.heading("webassetgenerator dev");
     // Errors in the initial build are reported, but dev mode keeps watching.
     await pipeline.build();
     for (const t of pipeline.transformers) logger.ok(`${t.name} initialized`);

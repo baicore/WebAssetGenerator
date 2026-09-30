@@ -4,10 +4,11 @@ import { buildCommand } from "./commands/build.js";
 import { cleanCommand } from "./commands/clean.js";
 import { devCommand } from "./commands/dev.js";
 
-const HELP = `webforge — lightweight, config-driven build tool
+const HELP = `WebAssetGenerator — lightweight, config-driven build tool
 
 Usage:
-  webforge <command> [options]
+  webassetgenerator <command> [options]
+  wag <command> [options]   (short alias)
 
 Commands:
   build     Build the project once
@@ -15,7 +16,7 @@ Commands:
   clean     Remove generated build files
 
 Options:
-  -c, --config <file>   Path to the config file (default: webforge.config.ts)
+  -c, --config <file>   Path to the config file (default: webassetgenerator.config.ts)
   -h, --help            Show this help
   -v, --version         Show the version
 `;

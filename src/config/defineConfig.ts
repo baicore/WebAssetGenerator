@@ -1,5 +1,5 @@
-import type { WebforgeConfig } from "./types.js";
+import type { WebAssetGeneratorConfig } from "./types.js";
 
-export function defineConfig(config: WebforgeConfig): WebforgeConfig {
+export function defineConfig(config: WebAssetGeneratorConfig): WebAssetGeneratorConfig {
     return config;
 }

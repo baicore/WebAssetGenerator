@@ -4,7 +4,7 @@ import path from "node:path";
 import { transform, type TransformFailure } from "esbuild";
 import type { TypeScriptOptions } from "../config/types.js";
 import type { BuildContext } from "../core/context.js";
-import { WebforgeError } from "../core/errors.js";
+import { WebAssetGeneratorError } from "../core/errors.js";
 import { matchInput, resolveInputs } from "../core/paths.js";
 import type { BuildResult, Transformer } from "../core/transformer.js";
 import { loadTypeScript, TypeChecker } from "./typecheck.js";
@@ -32,7 +32,7 @@ function outputPath(ctx: BuildContext, o: TypeScriptOptions, file: string, base:
     const ext = path.extname(file);
     const rel = path.relative(base, file);
     const out = path.join(path.resolve(ctx.root, o.output), rel.slice(0, -ext.length) + EXT_MAP[ext]!.out);
-    if (out === file) throw new WebforgeError(`Refusing to overwrite source file ${path.relative(ctx.root, file)}`);
+    if (out === file) throw new WebAssetGeneratorError(`Refusing to overwrite source file ${path.relative(ctx.root, file)}`);
     return out;
 }
 
@@ -59,7 +59,7 @@ async function compile(ctx: BuildContext, o: TypeScriptOptions, file: string, ba
     } catch (err) {
         const first = (err as TransformFailure).errors?.[0];
         if (!first) throw err;
-        throw new WebforgeError(
+        throw new WebAssetGeneratorError(
             `Failed to compile ${rel}`,
             `  ${first.text}`,
             { file: rel, line: first.location?.line, column: first.location ? first.location.column + 1 : undefined },
@@ -77,7 +77,7 @@ export function typescriptTransformer(o: TypeScriptOptions): Transformer {
         const ts = loadTypeScript(ctx.root);
         if (!ts) {
             if (o.typecheck === true) {
-                throw new WebforgeError(
+                throw new WebAssetGeneratorError(
                     "Type checking requires TypeScript",
                     "  Install it in your project: npm install -D typescript",
                 );

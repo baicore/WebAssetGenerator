@@ -53,7 +53,7 @@ export function startWatcher(root: string, options: WatchOptions): () => void {
     const watcher: FSWatcher = watch(root, { recursive: true }, (_event, name) => {
         if (!name) return;
         const parts = name.split(path.sep);
-        if (parts.some((p) => IGNORED.includes(p) || p.startsWith(".webforge.config."))) return;
+        if (parts.some((p) => IGNORED.includes(p) || p.startsWith(".webassetgenerator.config."))) return;
         const file = path.join(root, name);
         if (options.pipeline().isOutput(file)) return;
         pending.add(file);

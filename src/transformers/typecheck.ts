@@ -2,7 +2,7 @@ import { existsSync, statSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import type * as TS from "typescript";
-import { WebforgeError } from "../core/errors.js";
+import { WebAssetGeneratorError } from "../core/errors.js";
 
 /** The `typescript` package installed in the project, if any — its version is the user's choice. */
 export function loadTypeScript(root: string): typeof TS | undefined {
@@ -29,7 +29,7 @@ export class TypeChecker {
     }
 
     /** Returns an error describing all type errors, or undefined if the files type-check. */
-    check(files: string[]): WebforgeError | undefined {
+    check(files: string[]): WebAssetGeneratorError | undefined {
         const { ts, root } = this;
         const host = ts.createCompilerHost(this.options);
         const getSourceFile = host.getSourceFile.bind(host);
@@ -65,7 +65,7 @@ export class TypeChecker {
             affected.length === 1
                 ? `Failed to compile ${affected[0]}`
                 : `Type check failed (${diagnostics.length} errors in ${affected.length} files)`;
-        return new WebforgeError(
+        return new WebAssetGeneratorError(
             title,
             blocks.map((b) => (b.where ? `${b.text}\n\n  ${b.where}` : b.text)).join("\n\n"),
         );
@@ -89,11 +89,11 @@ export class TypeChecker {
         const { config, error } = ts.readConfigFile(configPath, ts.sys.readFile);
         const parsed = error ? undefined : ts.parseJsonConfigFileContent(config, ts.sys, root);
         const problem = error ?? parsed?.errors.find(
-            // TS18003 "No inputs were found": irrelevant, webforge passes the files itself.
+            // TS18003 "No inputs were found": irrelevant, WebAssetGenerator passes the files itself.
             (e) => e.category === ts.DiagnosticCategory.Error && e.code !== 18003,
         );
         if (problem) {
-            throw new WebforgeError(
+            throw new WebAssetGeneratorError(
                 "Invalid tsconfig.json",
                 `  ${ts.flattenDiagnosticMessageText(problem.messageText, "\n")}`,
             );

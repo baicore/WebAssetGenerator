@@ -25,7 +25,7 @@ export interface TailwindOptions {
     minify?: boolean;
 }
 
-export interface WebforgeConfig {
+export interface WebAssetGeneratorConfig {
     typescript?: TypeScriptOptions;
     tailwind?: TailwindOptions;
 }
