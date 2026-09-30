@@ -4,6 +4,8 @@ import type { BuildContext } from "./context.js";
 export interface BuildResult {
     source: string;
     output: string;
+    /** The source was deleted, so its output was removed. */
+    removed?: boolean;
 }
 
 export interface Transformer {
@@ -15,7 +17,7 @@ export interface Transformer {
      */
     build(context: BuildContext, changed?: string): Promise<BuildResult[]>;
 
-    /** Absolute glob patterns / files whose changes should trigger `build` in dev mode. */
+    /** Glob patterns / files, relative to the project root, whose changes should trigger `build` in dev mode. */
     watchPatterns(context: BuildContext): string[];
 
     /** Absolute paths of generated files that `clean` may delete. */

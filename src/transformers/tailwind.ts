@@ -4,7 +4,6 @@ import { mkdir } from "node:fs/promises";
 import { createRequire } from "node:module";
 import path from "node:path";
 import type { TailwindOptions } from "../config/types.js";
-import type { BuildContext } from "../core/context.js";
 import { WebforgeError } from "../core/errors.js";
 import type { Transformer } from "../core/transformer.js";
 
@@ -62,9 +61,7 @@ export function tailwindTransformer(o: TailwindOptions): Transformer {
         },
 
         // Tailwind scans templates for class names, so markup and scripts matter too.
-        watchPatterns(ctx: BuildContext) {
-            return [path.resolve(ctx.root, o.input), path.join(ctx.root, "**/*.{html,js,jsx,ts,tsx}")];
-        },
+        watchPatterns: () => [o.input, "**/*.{html,js,jsx,ts,tsx,vue,svelte,md}"],
 
         async outputs(ctx) {
             return [path.resolve(ctx.root, o.output)];

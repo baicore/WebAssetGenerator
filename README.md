@@ -3,8 +3,10 @@
 A lightweight, config-driven CLI build tool for web projects: TypeScript → browser JavaScript (via [esbuild](https://esbuild.github.io)) and Tailwind CSS → CSS (via the Tailwind CLI installed in *your* project).
 
 ```bash
-npm install -D webforge tailwindcss @tailwindcss/cli
+npm install -D webforge typescript tailwindcss @tailwindcss/cli
 ```
+
+`typescript`, `tailwindcss` and `@tailwindcss/cli` come from *your* project, so you control their versions.
 
 `webforge.config.ts`:
 
@@ -30,16 +32,35 @@ export default defineConfig({
 
 ## Options
 
-`typescript`: `input` (file or glob(s)), `output` (dir), `target` (default `es2022`), `sourcemap`, `minify`.
+`typescript`: `input` (file or glob(s)), `output` (dir), `target` (default `es2022`), `sourcemap`, `minify`, `typecheck` (default: on if `typescript` is installed).
 `tailwind`: `input`, `output`, `minify`.
 
 The directory structure below the glob's base is preserved (`src/components/button.ts` → `dist/components/button.js`). No bundling.
 
+## Type checking
+
+TypeScript is transpiled file by file with esbuild. Before emitting, webforge type-checks the inputs with the project's `typescript` package, using its `tsconfig.json` if present (otherwise strict, browser-oriented defaults). Type errors fail the build and nothing is emitted:
+
+```text
+✗ Failed to compile src/main.ts
+
+TS2322: Type 'string' is not assignable to type 'number'.
+
+  src/main.ts:12:5
+```
+
+Disable with `typecheck: false`.
+
+## Dev mode
+
+- Only the affected transformer rebuilds; changed TypeScript files are recompiled individually.
+- Deleting a source file removes its output.
+- Changing `webforge.config.ts` reloads the config and rebuilds (an invalid config is reported and the previous one stays active).
+
 ## Notes
 
-- TypeScript is **transpiled only** (esbuild); it is not type-checked. Run `tsc --noEmit` for type checks.
-- In `dev`, deleting a source file does not remove its output; use `webforge clean`.
 - Generated files are never written over sources.
+- Config options are validated; typos such as `minfy` are reported.
 
 ## Architecture
 

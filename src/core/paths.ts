@@ -1,4 +1,5 @@
 import path from "node:path";
+import picomatch from "picomatch";
 import { glob } from "tinyglobby";
 
 const GLOB_CHARS = /[*?[\]{}()!]/;
@@ -33,4 +34,28 @@ export async function resolveInputs(
         for (const f of files) if (!found.has(f)) found.set(f, base);
     }
     return [...found.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([file, base]) => ({ file, base }));
+}
+
+/** `./src/**\/*.ts` → `src/**\/*.ts`: patterns relative to the project root, posix separators. */
+export function normalizePattern(pattern: string): string {
+    return pattern.replaceAll("\\", "/").replace(/^(\.\/)+/, "");
+}
+
+/** Posix path of `file` relative to `root`, the form glob patterns are matched against. */
+export function toPosixRelative(root: string, file: string): string {
+    return path.relative(root, file).split(path.sep).join("/");
+}
+
+/**
+ * Glob base of the first pattern matching `file` (absolute), or undefined.
+ * Unlike `resolveInputs`, this also works for files that no longer exist.
+ */
+export function matchInput(root: string, patterns: string[], file: string): string | undefined {
+    const rel = toPosixRelative(root, file);
+    if (rel.startsWith("../") || rel.split("/").includes("node_modules")) return undefined;
+    for (const raw of patterns) {
+        const pattern = normalizePattern(raw);
+        if (picomatch(pattern, { dot: false })(rel)) return path.resolve(root, globBase(pattern));
+    }
+    return undefined;
 }

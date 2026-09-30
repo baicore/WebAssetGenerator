@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
-import { rm } from "node:fs/promises";
+import { readdir, rm, rmdir } from "node:fs/promises";
 import type { WebforgeConfig } from "../config/types.js";
 import { typescriptTransformer } from "../transformers/typescript.js";
 import { tailwindTransformer } from "../transformers/tailwind.js";
@@ -18,7 +18,10 @@ const rel = (ctx: BuildContext, p: string) => path.relative(ctx.root, p) || ".";
 
 function report(ctx: BuildContext, results: BuildResult[], written: Set<string>) {
     for (const r of results) written.add(r.output);
-    for (const r of results) ctx.logger.event("built", `${rel(ctx, r.source)} → ${rel(ctx, r.output)}`);
+    for (const r of results) {
+        if (r.removed) ctx.logger.event("removed", rel(ctx, r.output));
+        else ctx.logger.event("built", `${rel(ctx, r.source)} → ${rel(ctx, r.output)}`);
+    }
 }
 
 export class Pipeline {
@@ -70,6 +73,18 @@ export class Pipeline {
                 removed.push(file);
             }
         }
+        await removeEmptyDirs(this.context.root, removed);
         return removed;
+    }
+}
+
+/** Remove directories left empty by `clean`, walking up from each removed file — never the root itself. */
+async function removeEmptyDirs(root: string, removed: string[]) {
+    const dirs = [...new Set(removed.map((f) => path.dirname(f)))].sort((a, b) => b.length - a.length);
+    for (let dir of dirs) {
+        while (dir.startsWith(root + path.sep) && existsSync(dir) && (await readdir(dir)).length === 0) {
+            await rmdir(dir);
+            dir = path.dirname(dir);
+        }
     }
 }

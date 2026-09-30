@@ -4,14 +4,24 @@
   "description": "Lightweight, config-driven CLI build tool for modern web projects.",
   "type": "module",
   "license": "MIT",
-  "bin": { "webforge": "./bin/webforge.js" },
+  "bin": {
+    "webforge": "./bin/webforge.js"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" }
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
-  "files": ["bin", "dist"],
-  "engines": { "node": ">=20" },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
@@ -19,6 +29,7 @@
   },
   "dependencies": {
     "esbuild": "^0.25.0",
+    "picomatch": "^4.0.7",
     "tinyglobby": "^0.2.10"
   },
   "peerDependencies": {
@@ -26,12 +37,17 @@
     "tailwindcss": "^4.0.0"
   },
   "peerDependenciesMeta": {
-    "@tailwindcss/cli": { "optional": true },
-    "tailwindcss": { "optional": true }
+    "@tailwindcss/cli": {
+      "optional": true
+    },
+    "tailwindcss": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.0.0",
     "@types/node": "^22.0.0",
+    "@types/picomatch": "^4.0.3",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.6.0"
   }

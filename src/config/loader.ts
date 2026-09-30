@@ -48,23 +48,47 @@ export async function loadConfig(cwd: string, explicit?: string): Promise<Loaded
     }
 }
 
+type Check = (v: unknown) => boolean;
+const str: Check = (v) => typeof v === "string";
+const bool: Check = (v) => typeof v === "boolean";
+const strOrList: Check = (v) => str(v) || (Array.isArray(v) && v.length > 0 && v.every(str));
+
+/** Per section: option → [check, expected type, required]. */
+const SCHEMA: Record<keyof WebforgeConfig, Record<string, [Check, string, boolean]>> = {
+    typescript: {
+        input: [strOrList, "a string or an array of strings", true],
+        output: [str, "a string", true],
+        target: [str, "a string", false],
+        sourcemap: [bool, "a boolean", false],
+        minify: [bool, "a boolean", false],
+        typecheck: [bool, "a boolean", false],
+    },
+    tailwind: {
+        input: [str, "a string", true],
+        output: [str, "a string", true],
+        minify: [bool, "a boolean", false],
+    },
+};
+
 function validate(value: unknown, file: string): WebforgeConfig {
-    const name = path.basename(file);
     const fail = (msg: string): never => {
-        throw new WebforgeError(`Invalid config in ${name}`, `  ${msg}`);
+        throw new WebforgeError(`Invalid config in ${path.basename(file)}`, `  ${msg}`);
     };
-    if (!value || typeof value !== "object") return fail("Expected a default export: export default defineConfig({ ... })");
-    const c = value as Record<string, any>;
-    for (const key of Object.keys(c)) if (key !== "typescript" && key !== "tailwind") fail(`Unknown option "${key}"`);
-    if (c["typescript"]) {
-        const t = c["typescript"];
-        const okInput = typeof t.input === "string" || (Array.isArray(t.input) && t.input.every((i: unknown) => typeof i === "string"));
-        if (!okInput) fail('"typescript.input" must be a string or an array of strings');
-        if (typeof t.output !== "string") fail('"typescript.output" must be a string');
+    const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
+    if (!isObject(value)) return fail("Expected a default export: export default defineConfig({ ... })");
+
+    for (const [section, options] of Object.entries(value)) {
+        const schema = SCHEMA[section as keyof WebforgeConfig];
+        if (!schema) fail(`Unknown option "${section}" (expected: ${Object.keys(SCHEMA).join(", ")})`);
+        if (options === undefined) continue;
+        if (!isObject(options)) return fail(`"${section}" must be an object`);
+        for (const key of Object.keys(options)) {
+            if (!(key in schema!)) fail(`Unknown option "${section}.${key}"`);
+        }
+        for (const [key, [check, expected, required]] of Object.entries(schema!)) {
+            const v = options[key];
+            if (v === undefined ? required : !check(v)) fail(`"${section}.${key}" must be ${expected}`);
+        }
     }
-    if (c["tailwind"]) {
-        if (typeof c["tailwind"].input !== "string") fail('"tailwind.input" must be a string');
-        if (typeof c["tailwind"].output !== "string") fail('"tailwind.output" must be a string');
-    }
-    return c as WebforgeConfig;
+    return value as WebforgeConfig;
 }

@@ -1,11 +1,13 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { transform, type TransformFailure } from "esbuild";
 import type { TypeScriptOptions } from "../config/types.js";
 import type { BuildContext } from "../core/context.js";
 import { WebforgeError } from "../core/errors.js";
-import { resolveInputs } from "../core/paths.js";
+import { matchInput, resolveInputs } from "../core/paths.js";
 import type { BuildResult, Transformer } from "../core/transformer.js";
+import { loadTypeScript, TypeChecker } from "./typecheck.js";
 
 const EXT_MAP: Record<string, { out: string; loader: "ts" | "tsx" }> = {
     ".ts": { out: ".js", loader: "ts" },
@@ -17,12 +19,13 @@ const EXT_MAP: Record<string, { out: string; loader: "ts" | "tsx" }> = {
 const patterns = (o: TypeScriptOptions) => (Array.isArray(o.input) ? o.input : [o.input]);
 
 async function inputs(ctx: BuildContext, o: TypeScriptOptions) {
-    const outDir = path.resolve(ctx.root, o.output);
     const all = await resolveInputs(ctx.root, patterns(o));
-    return all.filter(({ file }) => {
-        const ext = path.extname(file);
-        return ext in EXT_MAP && !/\.d\.[cm]?ts$/.test(file) && !file.startsWith(outDir + path.sep);
-    });
+    return all.filter(({ file }) => isSource(ctx, o, file));
+}
+
+function isSource(ctx: BuildContext, o: TypeScriptOptions, file: string): boolean {
+    const outDir = path.resolve(ctx.root, o.output);
+    return path.extname(file) in EXT_MAP && !/\.d\.[cm]?ts$/.test(file) && !file.startsWith(outDir + path.sep);
 }
 
 function outputPath(ctx: BuildContext, o: TypeScriptOptions, file: string, base: string): string {
@@ -66,23 +69,65 @@ async function compile(ctx: BuildContext, o: TypeScriptOptions, file: string, ba
 }
 
 export function typescriptTransformer(o: TypeScriptOptions): Transformer {
+    let checker: TypeChecker | undefined | null; // null: type checking disabled
+
+    function typeChecker(ctx: BuildContext): TypeChecker | null {
+        if (checker !== undefined) return checker;
+        if (o.typecheck === false) return (checker = null);
+        const ts = loadTypeScript(ctx.root);
+        if (!ts) {
+            if (o.typecheck === true) {
+                throw new WebforgeError(
+                    "Type checking requires TypeScript",
+                    "  Install it in your project: npm install -D typescript",
+                );
+            }
+            ctx.logger.info("TypeScript not installed in the project, skipping type checks");
+            return (checker = null);
+        }
+        return (checker = new TypeChecker(ts, ctx.root));
+    }
+
+    /** Type errors block emitting, so dist/ never contains code that failed the check. */
+    async function check(ctx: BuildContext) {
+        const tc = typeChecker(ctx);
+        if (!tc) return;
+        const error = tc.check((await inputs(ctx, o)).map((i) => i.file));
+        if (error) throw error;
+    }
+
     return {
         name: "TypeScript",
 
         async build(ctx, changed) {
-            const files = await inputs(ctx, o);
             if (changed) {
-                const hit = files.find((f) => f.file === changed);
-                if (hit) return [await compile(ctx, o, hit.file, hit.base)];
-                return []; // not (or no longer) an input
+                const base = matchInput(ctx.root, patterns(o), changed);
+                if (!base || !isSource(ctx, o, changed)) return [];
+                if (!existsSync(changed)) {
+                    // Source deleted: its output must go too.
+                    const output = outputPath(ctx, o, changed, base);
+                    await rm(output, { force: true });
+                    await rm(output + ".map", { force: true });
+                    await check(ctx);
+                    return [{ source: changed, output, removed: true }];
+                }
+                await check(ctx);
+                return [await compile(ctx, o, changed, base)];
             }
-            const results: BuildResult[] = [];
-            for (const { file, base } of files) results.push(await compile(ctx, o, file, base));
-            if (results.length === 0) ctx.logger.info(`No TypeScript files matched ${patterns(o).join(", ")}`);
-            return results;
+            const files = await inputs(ctx, o);
+            if (files.length === 0) {
+                ctx.logger.info(`No TypeScript files matched ${patterns(o).join(", ")}`);
+                return [];
+            }
+            await check(ctx);
+            // Compile in parallel; on failure report the first error in file order (deterministic).
+            const settled = await Promise.allSettled(files.map(({ file, base }) => compile(ctx, o, file, base)));
+            const failure = settled.find((r) => r.status === "rejected");
+            if (failure) throw failure.reason;
+            return settled.map((r) => (r as PromiseFulfilledResult<BuildResult>).value);
         },
 
-        watchPatterns: (ctx) => patterns(o).map((p) => path.resolve(ctx.root, p)),
+        watchPatterns: () => patterns(o),
 
         async outputs(ctx) {
             const out: string[] = [];

@@ -9,6 +9,11 @@ export interface TypeScriptOptions {
     sourcemap?: boolean;
     /** Minify the emitted JavaScript. */
     minify?: boolean;
+    /**
+     * Type-check before emitting, using the project's `typescript` package and tsconfig.json.
+     * Default: on when `typescript` is installed in the project.
+     */
+    typecheck?: boolean;
 }
 
 export interface TailwindOptions {
