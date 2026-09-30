@@ -1,11 +1,11 @@
 {
-  "name": "webforge",
+  "name": "taty",
   "version": "0.1.0",
   "description": "Lightweight, config-driven CLI build tool for modern web projects.",
   "type": "module",
   "license": "MIT",
   "bin": {
-    "webforge": "./bin/webforge.js"
+    "taty": "./bin/taty.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

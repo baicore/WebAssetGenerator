@@ -25,7 +25,7 @@ export interface TailwindOptions {
     minify?: boolean;
 }
 
-export interface WebforgeConfig {
+export interface TatyConfig {
     typescript?: TypeScriptOptions;
     tailwind?: TailwindOptions;
 }

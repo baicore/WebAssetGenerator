@@ -5,13 +5,13 @@ export interface SourceLocation {
 }
 
 /** An expected, user-facing failure (bad config, compile error, ...). */
-export class WebforgeError extends Error {
+export class TatyError extends Error {
     constructor(
         message: string,
         readonly details?: string,
         readonly location?: SourceLocation,
     ) {
         super(message);
-        this.name = "WebforgeError";
+        this.name = "TatyError";
     }
 }

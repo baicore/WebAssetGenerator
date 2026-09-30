@@ -4,7 +4,7 @@ import { mkdir } from "node:fs/promises";
 import { createRequire } from "node:module";
 import path from "node:path";
 import type { TailwindOptions } from "../config/types.js";
-import { WebforgeError } from "../core/errors.js";
+import { TatyError } from "../core/errors.js";
 import type { Transformer } from "../core/transformer.js";
 
 /** Locate the Tailwind CLI installed in the *project*, so its version is under the user's control. */
@@ -14,14 +14,14 @@ function resolveCli(root: string): string {
     try {
         pkgPath = require.resolve("@tailwindcss/cli/package.json");
     } catch {
-        throw new WebforgeError(
+        throw new TatyError(
             "Tailwind CLI not found",
             "  Install it in your project: npm install -D tailwindcss @tailwindcss/cli",
         );
     }
     const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as { bin?: string | Record<string, string> };
     const bin = typeof pkg.bin === "string" ? pkg.bin : pkg.bin?.["tailwindcss"];
-    if (!bin) throw new WebforgeError("Could not determine the Tailwind CLI entry point");
+    if (!bin) throw new TatyError("Could not determine the Tailwind CLI entry point");
     return path.resolve(path.dirname(pkgPath), bin);
 }
 
@@ -39,7 +39,7 @@ function run(cli: string, args: string[], cwd: string): Promise<void> {
                 .filter((l) => l.trim() && !/^≈ tailwindcss/.test(l) && !/^Done in/.test(l))
                 .map((l) => `  ${l}`)
                 .join("\n");
-            reject(new WebforgeError("Failed to build Tailwind CSS", details));
+            reject(new TatyError("Failed to build Tailwind CSS", details));
         });
     });
 }
@@ -51,8 +51,8 @@ export function tailwindTransformer(o: TailwindOptions): Transformer {
         async build(ctx) {
             const input = path.resolve(ctx.root, o.input);
             const output = path.resolve(ctx.root, o.output);
-            if (input === output) throw new WebforgeError("Tailwind input and output must differ");
-            if (!existsSync(input)) throw new WebforgeError(`Tailwind input not found: ${o.input}`);
+            if (input === output) throw new TatyError("Tailwind input and output must differ");
+            if (!existsSync(input)) throw new TatyError(`Tailwind input not found: ${o.input}`);
             await mkdir(path.dirname(output), { recursive: true });
             const args = ["-i", input, "-o", output];
             if (o.minify) args.push("--minify");

@@ -1,13 +1,13 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { readdir, rm, rmdir } from "node:fs/promises";
-import type { WebforgeConfig } from "../config/types.js";
+import type { TatyConfig } from "../config/types.js";
 import { typescriptTransformer } from "../transformers/typescript.js";
 import { tailwindTransformer } from "../transformers/tailwind.js";
 import type { BuildContext } from "./context.js";
 import type { BuildResult, Transformer } from "./transformer.js";
 
-export function createTransformers(config: WebforgeConfig): Transformer[] {
+export function createTransformers(config: TatyConfig): Transformer[] {
     const list: Transformer[] = [];
     if (config.typescript) list.push(typescriptTransformer(config.typescript));
     if (config.tailwind) list.push(tailwindTransformer(config.tailwind));
@@ -25,7 +25,7 @@ function report(ctx: BuildContext, results: BuildResult[], written: Set<string>)
 }
 
 export class Pipeline {
-    /** Files webforge generated itself; the watcher must not treat them as inputs. */
+    /** Files TaTy generated itself; the watcher must not treat them as inputs. */
     private readonly written = new Set<string>();
 
     constructor(
