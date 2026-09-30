@@ -1,17 +1,17 @@
-# webforge
+# TaTy
 
 A lightweight, config-driven CLI build tool for web projects: TypeScript → browser JavaScript (via [esbuild](https://esbuild.github.io)) and Tailwind CSS → CSS (via the Tailwind CLI installed in *your* project).
 
 ```bash
-npm install -D webforge typescript tailwindcss @tailwindcss/cli
+npm install -D taty typescript tailwindcss @tailwindcss/cli
 ```
 
 `typescript`, `tailwindcss` and `@tailwindcss/cli` come from *your* project, so you control their versions.
 
-`webforge.config.ts`:
+`taty.config.ts`:
 
 ```ts
-import { defineConfig } from "webforge";
+import { defineConfig } from "taty";
 
 export default defineConfig({
     typescript: { input: "./src/**/*.ts", output: "./dist" },
@@ -23,10 +23,10 @@ export default defineConfig({
 
 | Command | |
 |---|---|
-| `webforge build` | Build once; exits with code 1 on errors |
-| `webforge dev` | Build, then rebuild on changes |
-| `webforge clean` | Delete generated files (never whole directories) |
-| `webforge --help` / `--version` | |
+| `taty build` | Build once; exits with code 1 on errors |
+| `taty dev` | Build, then rebuild on changes |
+| `taty clean` | Delete generated files (never whole directories) |
+| `taty --help` / `--version` | |
 
 `-c, --config <file>` selects a different config file.
 
@@ -39,7 +39,7 @@ The directory structure below the glob's base is preserved (`src/components/butt
 
 ## Type checking
 
-TypeScript is transpiled file by file with esbuild. Before emitting, webforge type-checks the inputs with the project's `typescript` package, using its `tsconfig.json` if present (otherwise strict, browser-oriented defaults). Type errors fail the build and nothing is emitted:
+TypeScript is transpiled file by file with esbuild. Before emitting, TaTy type-checks the inputs with the project's `typescript` package, using its `tsconfig.json` if present (otherwise strict, browser-oriented defaults). Type errors fail the build and nothing is emitted:
 
 ```text
 ✗ Failed to compile src/main.ts
@@ -55,7 +55,7 @@ Disable with `typecheck: false`.
 
 - Only the affected transformer rebuilds; changed TypeScript files are recompiled individually.
 - Deleting a source file removes its output.
-- Changing `webforge.config.ts` reloads the config and rebuilds (an invalid config is reported and the previous one stays active).
+- Changing `taty.config.ts` reloads the config and rebuilds (an invalid config is reported and the previous one stays active).
 
 ## Notes
 

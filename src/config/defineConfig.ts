@@ -1,5 +1,5 @@
-import type { WebforgeConfig } from "./types.js";
+import type { TatyConfig } from "./types.js";
 
-export function defineConfig(config: WebforgeConfig): WebforgeConfig {
+export function defineConfig(config: TatyConfig): TatyConfig {
     return config;
 }

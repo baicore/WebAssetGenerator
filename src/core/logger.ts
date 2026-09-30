@@ -1,4 +1,4 @@
-import { WebforgeError } from "./errors.js";
+import { TatyError } from "./errors.js";
 
 const useColor = process.stdout.isTTY && !process.env["NO_COLOR"];
 const paint = (code: number) => (s: string) => (useColor ? `\x1b[${code}m${s}\x1b[0m` : s);
@@ -23,7 +23,7 @@ export const logger: Logger = {
     ok: (m) => console.log(`${green("✓")} ${m}`),
     event: (verb, m) => console.log(`${dim(time())}  ${verb.padEnd(7)} ${m}`),
     error(err) {
-        if (err instanceof WebforgeError) {
+        if (err instanceof TatyError) {
             console.error(`${red("✗")} ${err.message}`);
             if (err.details) console.error(`\n${err.details}`);
             if (err.location) {
