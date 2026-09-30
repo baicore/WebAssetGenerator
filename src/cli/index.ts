@@ -8,6 +8,7 @@ const HELP = `WebAssetGenerator — lightweight, config-driven build tool
 
 Usage:
   webassetgenerator <command> [options]
+  wag <command> [options]   (short alias)
 
 Commands:
   build     Build the project once

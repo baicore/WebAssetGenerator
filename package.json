@@ -5,7 +5,8 @@
   "type": "module",
   "license": "MIT",
   "bin": {
-    "webassetgenerator": "./bin/webassetgenerator.js"
+    "webassetgenerator": "./bin/webassetgenerator.js",
+    "wag": "./bin/webassetgenerator.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

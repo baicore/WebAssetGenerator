@@ -28,6 +28,8 @@ export default defineConfig({
 | `webassetgenerator clean` | Delete generated files (never whole directories) |
 | `webassetgenerator --help` / `--version` | |
 
+`wag` is a short alias for `webassetgenerator` (e.g. `wag build`).
+
 `-c, --config <file>` selects a different config file.
 
 ## Options
