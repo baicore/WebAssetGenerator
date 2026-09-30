@@ -1,5 +1,5 @@
-import type { TatyConfig } from "./types.js";
+import type { WebAssetGeneratorConfig } from "./types.js";
 
-export function defineConfig(config: TatyConfig): TatyConfig {
+export function defineConfig(config: WebAssetGeneratorConfig): WebAssetGeneratorConfig {
     return config;
 }

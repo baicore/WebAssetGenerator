@@ -25,7 +25,7 @@ export interface TailwindOptions {
     minify?: boolean;
 }
 
-export interface TatyConfig {
+export interface WebAssetGeneratorConfig {
     typescript?: TypeScriptOptions;
     tailwind?: TailwindOptions;
 }

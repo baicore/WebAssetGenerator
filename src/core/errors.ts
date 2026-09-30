@@ -5,13 +5,13 @@ export interface SourceLocation {
 }
 
 /** An expected, user-facing failure (bad config, compile error, ...). */
-export class TatyError extends Error {
+export class WebAssetGeneratorError extends Error {
     constructor(
         message: string,
         readonly details?: string,
         readonly location?: SourceLocation,
     ) {
         super(message);
-        this.name = "TatyError";
+        this.name = "WebAssetGeneratorError";
     }
 }
