@@ -1,11 +1,11 @@
 {
-  "name": "taty",
+  "name": "webassetgenerator",
   "version": "0.1.0",
   "description": "Lightweight, config-driven CLI build tool for modern web projects.",
   "type": "module",
   "license": "MIT",
   "bin": {
-    "taty": "./bin/taty.js"
+    "webassetgenerator": "./bin/webassetgenerator.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

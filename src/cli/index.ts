@@ -4,10 +4,10 @@ import { buildCommand } from "./commands/build.js";
 import { cleanCommand } from "./commands/clean.js";
 import { devCommand } from "./commands/dev.js";
 
-const HELP = `TaTy — lightweight, config-driven build tool
+const HELP = `WebAssetGenerator — lightweight, config-driven build tool
 
 Usage:
-  taty <command> [options]
+  webassetgenerator <command> [options]
 
 Commands:
   build     Build the project once
@@ -15,7 +15,7 @@ Commands:
   clean     Remove generated build files
 
 Options:
-  -c, --config <file>   Path to the config file (default: taty.config.ts)
+  -c, --config <file>   Path to the config file (default: webassetgenerator.config.ts)
   -h, --help            Show this help
   -v, --version         Show the version
 `;

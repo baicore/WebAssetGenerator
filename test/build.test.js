@@ -7,12 +7,12 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const bin = path.join(repo, "bin/taty.js");
+const bin = path.join(repo, "bin/webassetgenerator.js");
 
 function project(files) {
-    const dir = mkdtempSync(path.join(tmpdir(), "taty-"));
+    const dir = mkdtempSync(path.join(tmpdir(), "webassetgenerator-"));
     mkdirSync(path.join(dir, "node_modules/@tailwindcss"), { recursive: true });
-    symlinkSync(repo, path.join(dir, "node_modules/taty"));
+    symlinkSync(repo, path.join(dir, "node_modules/webassetgenerator"));
     symlinkSync(path.join(repo, "node_modules/tailwindcss"), path.join(dir, "node_modules/tailwindcss"));
     symlinkSync(path.join(repo, "node_modules/@tailwindcss/cli"), path.join(dir, "node_modules/@tailwindcss/cli"));
     symlinkSync(path.join(repo, "node_modules/typescript"), path.join(dir, "node_modules/typescript"));
@@ -25,7 +25,7 @@ function project(files) {
 }
 const run = (dir, ...args) => spawnSync("node", [bin, ...args], { cwd: dir, encoding: "utf8" });
 
-const config = `import { defineConfig } from "taty";
+const config = `import { defineConfig } from "webassetgenerator";
 export default defineConfig({
   typescript: { input: "./src/**/*.ts", output: "./dist" },
   tailwind: { input: "./src/styles.css", output: "./dist/styles.css" },
@@ -34,7 +34,7 @@ const tsOnly = config.replace(/  tailwind:.*\n/, "");
 
 test("build preserves structure and generates CSS", () => {
     const dir = project({
-        "taty.config.ts": config,
+        "webassetgenerator.config.ts": config,
         "src/main.ts": "export const a: number = 1;",
         "src/components/button.ts": "export const b: string = 'x';",
         "src/styles.css": '@import "tailwindcss";',
@@ -51,7 +51,7 @@ test("build preserves structure and generates CSS", () => {
 
 test("compile errors give a non-zero exit code", () => {
     const dir = project({
-        "taty.config.ts": tsOnly,
+        "webassetgenerator.config.ts": tsOnly,
         "src/bad.ts": "const x: number = ;",
     });
     const r = run(dir, "build");
@@ -66,7 +66,7 @@ test("--version and --help", () => {
 
 test("type errors fail the build and are reported with code and location", () => {
     const dir = project({
-        "taty.config.ts": tsOnly,
+        "webassetgenerator.config.ts": tsOnly,
         "src/main.ts": "let n: number = 1;\nn = 'x';\nexport {};",
     });
     const r = run(dir, "build");
@@ -79,7 +79,7 @@ test("type errors fail the build and are reported with code and location", () =>
 
 test("typecheck: false skips the type check", () => {
     const dir = project({
-        "taty.config.ts": tsOnly.replace('output: "./dist" }', 'output: "./dist", typecheck: false }'),
+        "webassetgenerator.config.ts": tsOnly.replace('output: "./dist" }', 'output: "./dist", typecheck: false }'),
         "src/main.ts": "let n: number = 1;\nn = 'x';\nexport {};",
     });
     assert.equal(run(dir, "build").status, 0);
@@ -87,7 +87,7 @@ test("typecheck: false skips the type check", () => {
 
 test("invalid config options are rejected", () => {
     const dir = project({
-        "taty.config.ts": tsOnly.replace('output: "./dist" }', 'output: "./dist", minfy: true }'),
+        "webassetgenerator.config.ts": tsOnly.replace('output: "./dist" }', 'output: "./dist", minfy: true }'),
     });
     const r = run(dir, "build");
     assert.equal(r.status, 1);
@@ -104,7 +104,7 @@ async function waitFor(predicate, ms = 8000) {
 }
 
 test("dev rebuilds changed files and removes outputs of deleted ones", async () => {
-    const dir = project({ "taty.config.ts": tsOnly, "src/main.ts": "export const a = 1;" });
+    const dir = project({ "webassetgenerator.config.ts": tsOnly, "src/main.ts": "export const a = 1;" });
     const child = spawn("node", [bin, "dev"], { cwd: dir });
     let log = "";
     child.stdout.on("data", (d) => (log += d));
